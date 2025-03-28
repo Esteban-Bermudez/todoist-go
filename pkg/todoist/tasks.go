@@ -60,8 +60,17 @@ type TaskOptions struct {
 	DeadlineLang string   `json:"deadline_lang,omitempty"`
 }
 
-func (c *Client) GetActiveTasks() ([]Task, error) {
-	res, err := c.request("GET", "/tasks", nil)
+type TaskFilters struct {
+	ProjectID string `json:"project_id,omitempty"`
+	SectionID string `json:"section_id,omitempty"`
+	Label     string `json:"label,omitempty"`
+	Filter    string `json:"filter,omitempty"`
+	Lang      string `json:"lang,omitempty"`
+	IDs       []int  `json:"ids,omitempty"`
+}
+
+func (c *Client) GetActiveTasks(filters *TaskFilters) ([]Task, error) {
+	res, err := c.request("GET", "/tasks", nil, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +89,7 @@ func (c *Client) GetActiveTasks() ([]Task, error) {
 }
 
 func (c *Client) GetTask(taskID string) (*Task, error) {
-	res, err := c.request("GET", fmt.Sprintf("/tasks/%s", taskID), nil)
+	res, err := c.request("GET", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +111,7 @@ func (c *Client) CreateTask(content string, options *TaskOptions) (*Task, error)
 	body := options
 	body.Content = content
 
-	res, err := c.request("POST", "/tasks", body)
+	res, err := c.request("POST", "/tasks", body, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +130,7 @@ func (c *Client) CreateTask(content string, options *TaskOptions) (*Task, error)
 }
 
 func (c *Client) UpdateTask(taskID string, options *TaskOptions) (*Task, error) {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s", taskID), options)
+	res, err := c.request("POST", fmt.Sprintf("/tasks/%s", taskID), options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +149,7 @@ func (c *Client) UpdateTask(taskID string, options *TaskOptions) (*Task, error) 
 }
 
 func (c *Client) CloseTask(taskID string) error {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/close", taskID), nil)
+	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/close", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -153,7 +162,7 @@ func (c *Client) CloseTask(taskID string) error {
 }
 
 func (c *Client) ReopenTask(taskID string) error {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil)
+	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -166,7 +175,7 @@ func (c *Client) ReopenTask(taskID string) error {
 }
 
 func (c *Client) DeleteTask(taskID string) error {
-	res, err := c.request("DELETE", fmt.Sprintf("/tasks/%s", taskID), nil)
+	res, err := c.request("DELETE", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
