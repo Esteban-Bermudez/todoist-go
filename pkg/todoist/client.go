@@ -16,7 +16,7 @@ type Client struct {
 func NewClient(apiKey string) *Client {
 	return &Client{
 		APIKey:  apiKey,
-		BaseURL: "https://api.todoist.com/rest/v2",
+		BaseURL: "https://api.todoist.com/api/v1",
 	}
 }
 
