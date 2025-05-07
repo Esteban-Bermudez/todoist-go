@@ -44,11 +44,6 @@ type Project struct {
 	IsShared     bool    `json:"is_shared"`
 }
 
-type ProjectResponse struct {
-	NextCursor *string   `json:"next_cursor"`
-	Results    []Project `json:"results"`
-}
-
 type ProjectOptions struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
@@ -58,18 +53,13 @@ type ProjectOptions struct {
 	ViewStyle   *string `json:"view_style,omitempty"`
 }
 
-type ProjectCollaboratorResponse struct {
-	NextCursor *string        `json:"next_cursor"`
-	Results    []Collaborator `json:"results"`
-}
-
 type Collaborator struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
-func (c *Client) GetProjects(pagination PaginationOptions) ([]Project, *string, error) {
+func (c *Client) GetProjects(pagination *PaginationFilters) ([]Project, *string, error) {
 	res, err := c.request("GET", "/projects/", nil, pagination)
 	if err != nil {
 		return nil, nil, err
@@ -80,15 +70,15 @@ func (c *Client) GetProjects(pagination PaginationOptions) ([]Project, *string, 
 		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
 	}
 
-	var response ProjectResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
+	var pagiResp PaginationResponse[Project]
+	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
 		return nil, nil, err
 	}
-	return response.Results, response.NextCursor, nil
+	return pagiResp.Results, pagiResp.NextCursor, nil
 }
 
-func (c *Client) GetArchived(pagination PaginationOptions) ([]Project, *string, error) {
+func (c *Client) GetArchived(pagination *PaginationFilters) ([]Project, *string, error) {
 	res, err := c.request("GET", "/projects/archived", nil, pagination)
 	if err != nil {
 		return nil, nil, err
@@ -99,12 +89,12 @@ func (c *Client) GetArchived(pagination PaginationOptions) ([]Project, *string, 
 		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
 	}
 
-	var pr ProjectResponse
-	err = json.NewDecoder(res.Body).Decode(&pr)
+	var pagiResp PaginationResponse[Project]
+	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
 		return nil, nil, err
 	}
-	return pr.Results, pr.NextCursor, nil
+	return pagiResp.Results, pagiResp.NextCursor, nil
 }
 
 func (c *Client) CreateProject(name string, options *ProjectOptions) (*Project, error) {
@@ -210,7 +200,7 @@ func (c *Client) DeleteProject(projectId string) error {
 
 func (c *Client) GetProjectCollaborators(
 	projectId string,
-	pagination PaginationOptions,
+	pagination *PaginationFilters,
 ) ([]Collaborator, *string, error) {
 	res, err := c.request(
 		"GET",
@@ -227,12 +217,12 @@ func (c *Client) GetProjectCollaborators(
 		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
 	}
 
-	var pcr ProjectCollaboratorResponse
-	err = json.NewDecoder(res.Body).Decode(&pcr)
+	var pagiResp PaginationResponse[Collaborator]
+	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
 		return nil, nil, err
 	}
-	return pcr.Results, pcr.NextCursor, nil
+	return pagiResp.Results, pagiResp.NextCursor, nil
 }
 
 // TODO: Implement Projects Join Endpoint
