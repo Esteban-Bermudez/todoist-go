@@ -45,12 +45,12 @@ type Project struct {
 }
 
 type ProjectOptions struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	ParentID    *string `json:"parent_id,omitempty"` // Nullable
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	ParentID    string `json:"parent_id,omitempty"`
 	Color       string  `json:"color,omitempty"`
 	IsFavorite  bool    `json:"is_favorite,omitempty"`
-	ViewStyle   *string `json:"view_style,omitempty"`
+	ViewStyle   string `json:"view_style,omitempty"`
 }
 
 type Collaborator struct {
@@ -99,7 +99,7 @@ func (c *Client) GetArchived(pagination *PaginationFilters) ([]Project, *string,
 
 func (c *Client) CreateProject(name string, options *ProjectOptions) (*Project, error) {
 	body := options
-	body.Name = &name
+	body.Name = name
 
 	res, err := c.request("POST", "/projects", body, nil)
 	if err != nil {
