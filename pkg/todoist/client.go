@@ -63,14 +63,15 @@ func addQueryParams(requestURL *url.URL, query any) (*url.URL, error) {
 		return nil, err
 	}
 
-	var queryMap map[string]string
+	var queryMap map[string]any
 	err = json.Unmarshal(queryData, &queryMap)
 	if err != nil {
 		fmt.Println("Error unmarshalling query data:", err)
 		return nil, err
 	}
+
 	for key, value := range queryMap {
-		q.Set(key, value)
+		q.Set(key, fmt.Sprintf("%v", value))
 	}
 
 	requestURL.RawQuery = q.Encode()
