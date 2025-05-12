@@ -3,26 +3,19 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
-// Attachment represents a file attached to a comment.
-type Attachment struct {
-	FileName     string `json:"file_name"`
-	FileType     string `json:"file_type"`
-	FileURL      string `json:"file_url"`
-	ResourceType string `json:"resource_type"` // e.g., "file", "image", "audio", etc.
-}
-
 // Comment represents a Todoist comment on a task or project.
 type Comment struct {
-	ID         string      `json:"id"`
-	TaskID     *string     `json:"task_id"`    // Pointer for nullability
-	ProjectID  *string     `json:"project_id"` // Pointer for nullability
-	PostedAt   string      `json:"posted_at"`  // RFC3339 format UTC
-	Content    string      `json:"content"`
-	Attachment *Attachment `json:"attachment"` // Pointer for nullability
+	ID             string          `json:"id"`
+	PostedUID      *string         `json:"posted_uid"`
+	Content        string          `json:"content"`
+	FileAttachment *map[string]any `json:"file_attachment"`
+	UIDsToNotify   *[]string       `json:"uids_to_notify"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PostedAt       string          `json:"posted_at"`
+	Reactions      *map[string]any `json:"reactions"`
 }
 
 // CommentFilters holds the required filter parameters for retrieving comments.
@@ -30,38 +23,45 @@ type Comment struct {
 type CommentFilters struct {
 	TaskID    string `json:"task_id,omitempty"`
 	ProjectID string `json:"project_id,omitempty"`
+	PaginationFilters
 }
 
 // CommentOptions holds the parameters for creating a new comment.
 // Exactly one of TaskID or ProjectID must be provided. Content is handled separately.
 type CommentOptions struct {
-	TaskID     string      `json:"task_id,omitempty"`
-	ProjectID  string      `json:"project_id,omitempty"`
-	Content    string      `json:"content"`              // Required content for the comment
-	Attachment *Attachment `json:"attachment,omitempty"` // Pointer for optional attachment
+	Content      string          `json:"content"` // Required content for the comment
+	TaskID       string          `json:"task_id,omitempty"`
+	ProjectID    string          `json:"project_id,omitempty"`
+	Attachment   *map[string]any `json:"attachment,omitempty"` // Optional file attachment
+	UIDsToNotify *[]int          `json:"uids_to_notify,omitempty"`
 }
 
-// GetAllComments retrieves comments for a specific task or project.
-// Exactly one of options.TaskID or options.ProjectID must be non-empty.
-func (c *Client) GetAllComments(options *CommentOptions) ([]Comment, error) {
-	res, err := c.request("GET", "/comments", nil, options)
+// GetComments returns a list of all comments for a given task_id or project_id
+// Exactly one of filters.TaskID or filters.ProjectID must be non-empty.
+func (c *Client) GetComments(filters CommentFilters) ([]Comment, *string, error) {
+  if filters.TaskID == "" && filters.ProjectID == "" {
+    return nil, nil, fmt.Errorf("either TaskID or ProjectID must be provided in filters")
+  }
+  if filters.TaskID != "" && filters.ProjectID != "" {
+    return nil, nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
+  }
+
+	res, err := c.request("GET", "/comments", nil, filters)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make get all comments request: %w", err)
+		return nil, nil, fmt.Errorf("failed to make get all comments request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		resBody, _ := io.ReadAll(res.Body)
-		fmt.Printf("Response body: %s\n", resBody) // Print the response body for debugging
-		return nil, fmt.Errorf("get all comments unexpected status code: %d", res.StatusCode)
+		return nil, nil, fmt.Errorf("get all comments unexpected status code: %d", res.StatusCode)
 	}
 
-	var comments []Comment
-	err = json.NewDecoder(res.Body).Decode(&comments)
+	var pagiResp PaginationResponse[Comment]
+	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode get all comments response: %w", err)
+		return nil, nil, err
 	}
-	return comments, nil // Return the list of comments
+	return pagiResp.Results, pagiResp.NextCursor, nil
 }
 
 // CreateComment creates a new comment on a task or project.
@@ -119,9 +119,10 @@ func (c *Client) GetComment(commentID string) (*Comment, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode get comment response: %w", err)
 	}
-	return &comment, nil // Return the comment object
+	return &comment, nil
 }
 
+// UpdateComment updates an existing comment's content by its ID. 
 func (c *Client) UpdateComment(commentID string, content string) (*Comment, error) {
 	body := CommentOptions{
 		Content: content,
@@ -142,7 +143,7 @@ func (c *Client) UpdateComment(commentID string, content string) (*Comment, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode update comment response: %w", err)
 	}
-	return &comment, nil // Return the updated comment object
+	return &comment, nil
 }
 
 // DeleteComment deletes a comment by its ID.
@@ -155,9 +156,9 @@ func (c *Client) DeleteComment(commentID string) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusNoContent {
+	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("delete comment unexpected status code: %d", res.StatusCode)
 	}
 
-	return nil // Success (204 No Content)
+	return nil
 }
