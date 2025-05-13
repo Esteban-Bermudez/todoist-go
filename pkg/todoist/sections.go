@@ -9,12 +9,12 @@ import (
 type Section struct {
 	ID           string  `json:"id"`
 	UserID       string  `json:"user_id"`
-	ProjectID    string  `json:"project_id"`
+	ProjectID    string  `json:"project_id"` // ID of the project section belongs to
 	AddedAt      string  `json:"added_at"`
 	UpdatedAt    *string `json:"updated_at"`
 	ArchivedAt   *string `json:"archived_at"`
 	Name         string  `json:"name"`
-	SectionOrder int     `json:"section_order"`
+	SectionOrder int     `json:"section_order"` // Section position among other sections from the same project
 	IsArchived   bool    `json:"is_archived"`
 	IsDeleted    bool    `json:"is_deleted"`
 	IsCollapsed  bool    `json:"is_collapsed"`
@@ -52,7 +52,7 @@ func (c *Client) CreateSection(
 	options.Name = name
 	options.ProjectID = projectID
 
-	res, err := c.request("POST", "/sections", nil, options)
+	res, err := c.request("POST", "/sections", options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create section: %w", err)
 	}
@@ -131,7 +131,7 @@ func (c *Client) UpdateSection(id string, name string) (*Section, error) {
 		Name: name,
 	}
 
-	res, err := c.request("POST", fmt.Sprintf("/sections/%s", id), nil, options)
+	res, err := c.request("POST", fmt.Sprintf("/sections/%s", id), options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update section: %w", err)
 	}
