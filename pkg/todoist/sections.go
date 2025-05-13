@@ -1,0 +1,170 @@
+package todoist
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+type Section struct {
+	ID           string  `json:"id"`
+	UserID       string  `json:"user_id"`
+	ProjectID    string  `json:"project_id"`
+	AddedAt      string  `json:"added_at"`
+	UpdatedAt    *string `json:"updated_at"`
+	ArchivedAt   *string `json:"archived_at"`
+	Name         string  `json:"name"`
+	SectionOrder int     `json:"section_order"`
+	IsArchived   bool    `json:"is_archived"`
+	IsDeleted    bool    `json:"is_deleted"`
+	IsCollapsed  bool    `json:"is_collapsed"`
+}
+
+type SectionFilters struct {
+	ProjectID string `json:"project_id,omitempty"`
+	PaginationFilters
+}
+
+type SectionOptions struct {
+	Name      string `json:"name,omitempty"`
+	ProjectID string `json:"project_id,omitempty"`
+	Order     int    `json:"order,omitempty"`
+}
+
+// CreateSection creates a new section in the specified project. The parameters
+// name and projectID are required. They will override the values in options.
+func (c *Client) CreateSection(
+	name string,
+	projectID string,
+	options *SectionOptions,
+) (*Section, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+	if projectID == "" {
+		return nil, fmt.Errorf("project_id is required")
+	}
+
+	if options == nil {
+		options = &SectionOptions{}
+	}
+
+	options.Name = name
+	options.ProjectID = projectID
+
+	res, err := c.request("POST", "/sections", nil, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create section: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("create section unexpected status code: %d", res.StatusCode)
+	}
+
+	var section Section
+	err = json.NewDecoder(res.Body).Decode(&section)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode section response: %w", err)
+	}
+
+	return &section, nil
+}
+
+// GetSections returns a list of all active sections for the user
+// or a specific project, depending on the filters provided.
+func (c *Client) GetSections(filters *SectionFilters) ([]Section, *string, error) {
+	res, err := c.request("GET", "/sections", nil, filters)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get sections: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, nil, fmt.Errorf("get sections unexpected status code: %d", res.StatusCode)
+	}
+
+	var pagiResp PaginationResponse[Section]
+	err = json.NewDecoder(res.Body).Decode(&pagiResp)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to decode sections response: %w", err)
+	}
+
+	return pagiResp.Results, pagiResp.NextCursor, nil
+}
+
+// GetSection returns the section for the given section ID
+func (c *Client) GetSection(id string) (*Section, error) {
+	if id == "" {
+		return nil, fmt.Errorf("section ID is required")
+	}
+
+	res, err := c.request("GET", fmt.Sprintf("/sections/%s", id), nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get section: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("get section unexpected status code: %d", res.StatusCode)
+	}
+
+	var section Section
+	err = json.NewDecoder(res.Body).Decode(&section)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode section response: %w", err)
+	}
+
+	return &section, nil
+}
+
+// UpdateSection updates the section name with the given ID.
+func (c *Client) UpdateSection(id string, name string) (*Section, error) {
+	if id == "" {
+		return nil, fmt.Errorf("section ID is required")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+
+	options := &SectionOptions{
+		Name: name,
+	}
+
+	res, err := c.request("POST", fmt.Sprintf("/sections/%s", id), nil, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update section: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("update section unexpected status code: %d", res.StatusCode)
+	}
+
+	var section Section
+	err = json.NewDecoder(res.Body).Decode(&section)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode section response: %w", err)
+	}
+
+	return &section, nil
+}
+
+// DeleteSection deletes the section with the given ID and all of its tasks.
+func (c *Client) DeleteSection(id string) error {
+	if id == "" {
+		return fmt.Errorf("section ID is required")
+	}
+
+	res, err := c.request("DELETE", fmt.Sprintf("/sections/%s", id), nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete section: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("delete section unexpected status code: %d", res.StatusCode)
+	}
+
+	return nil
+}
