@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+// Label represents a Todoist label. We do not need to have a struct for
+// SharedLabel as they are represented as a []string in the API.
 type Label struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
@@ -14,15 +16,20 @@ type Label struct {
 	IsFavorite bool   `json:"is_favorite"`
 }
 
+// SharedLabelFilters holds the required filter parameters for retrieving shared
+// labels.
 type SharedLabelFilters struct {
 	OmitPersonal bool `json:"omit_personal,omitempty"`
 	PaginationFilters
 }
 
+// SharedLabelOptions holds the parameters for renaming or removing a shared
+// label. This is only used for the SharedLabelsRename.
 type SharedLabelOptions struct {
 	NewName string `json:"new_name,omitempty"`
 }
 
+// LabelOptions holds the parameters for creating or updating a label.
 type LabelOptions struct {
 	Name       string `json:"name,omitempty"`
 	Order      int    `json:"order,omitempty"`

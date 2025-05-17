@@ -39,12 +39,12 @@ type CommentOptions struct {
 // GetComments returns a list of all comments for a given task_id or project_id
 // Exactly one of filters.TaskID or filters.ProjectID must be non-empty.
 func (c *Client) GetComments(filters CommentFilters) ([]Comment, *string, error) {
-  if filters.TaskID == "" && filters.ProjectID == "" {
-    return nil, nil, fmt.Errorf("either TaskID or ProjectID must be provided in filters")
-  }
-  if filters.TaskID != "" && filters.ProjectID != "" {
-    return nil, nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
-  }
+	if filters.TaskID == "" && filters.ProjectID == "" {
+		return nil, nil, fmt.Errorf("either TaskID or ProjectID must be provided in filters")
+	}
+	if filters.TaskID != "" && filters.ProjectID != "" {
+		return nil, nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
+	}
 
 	res, err := c.request("GET", "/comments", nil, filters)
 	if err != nil {
@@ -122,7 +122,7 @@ func (c *Client) GetComment(commentID string) (*Comment, error) {
 	return &comment, nil
 }
 
-// UpdateComment updates an existing comment's content by its ID. 
+// UpdateComment updates an existing comment's content by its ID.
 func (c *Client) UpdateComment(commentID string, content string) (*Comment, error) {
 	body := CommentOptions{
 		Content: content,

@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+// Section represents a section in Todoist. A section will always belong to a
+// project. Sections are used to organize tasks within a project.
 type Section struct {
 	ID           string  `json:"id"`
 	UserID       string  `json:"user_id"`
@@ -20,11 +22,13 @@ type Section struct {
 	IsCollapsed  bool    `json:"is_collapsed"`
 }
 
+// SectionFilters holds the required filter parameters for retrieving sections.
 type SectionFilters struct {
 	ProjectID string `json:"project_id,omitempty"`
 	PaginationFilters
 }
 
+// SectionOptions holds the parameters for creating or updating a section.
 type SectionOptions struct {
 	Name      string `json:"name,omitempty"`
 	ProjectID string `json:"project_id,omitempty"`
@@ -72,7 +76,7 @@ func (c *Client) CreateSection(
 }
 
 // GetSections returns a list of all active sections for the user
-// or a specific project, depending on the filters provided.
+// or a specific project if filters.ProjectID is provided.
 func (c *Client) GetSections(filters *SectionFilters) ([]Section, *string, error) {
 	res, err := c.request("GET", "/sections", nil, filters)
 	if err != nil {

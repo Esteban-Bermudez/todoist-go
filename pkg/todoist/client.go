@@ -8,11 +8,16 @@ import (
 	"net/url"
 )
 
+// Client represents a Todoist API client. It contains the API key and base URL
+// for making requests to the Todoist API.
 type Client struct {
 	APIKey  string
 	BaseURL string
 }
 
+// NewClient creates a new Todoist API client with the provided API key.
+// The base URL is set to the Todoist API v1 endpoint and will be updated when
+// the API version changes.
 func NewClient(apiKey string) *Client {
 	return &Client{
 		APIKey:  apiKey,
