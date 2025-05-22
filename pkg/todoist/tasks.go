@@ -51,7 +51,7 @@ type TaskOptions struct {
 	DueDateTime  string   `json:"due_datetime,omitempty"`
 	DueLang      string   `json:"due_lang,omitempty"`
 	Duration     int      `json:"duration,omitempty"` // If duration is set, duration_unit must also be set
-	DurationUnit string   `json:"duration_unit,omitempty"` // The unit of the duration has to be "days" or "minutes".
+	DurationUnit string   `json:"duration_unit,omitempty"` // The unit of the duration has to be "day" or "minute".
 	DeadlineDate string   `json:"deadline_date,omitempty"`
 	DeadlineLang string   `json:"deadline_lang,omitempty"`
 }
