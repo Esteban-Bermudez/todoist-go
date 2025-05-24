@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/Esteban-Bermudez/todoist-go/pkg/todoist/sync"
 )
 
 // Client represents a Todoist API client. It contains the API key and base URL
 // for making requests to the Todoist API.
 type Client struct {
-	APIKey  string
 	BaseURL string
+	Sync    *sync.Sync
 }
 
 // NewClient creates a new Todoist API client with the provided API key.
@@ -20,8 +22,13 @@ type Client struct {
 // the API version changes.
 func NewClient(apiKey string) *Client {
 	return &Client{
-		APIKey:  apiKey,
 		BaseURL: "https://api.todoist.com/api/v1",
+		Sync: &sync.Sync{
+			SyncToken:     "*",
+			ResourceTypes: []string{},
+			Commands:      []sync.Command{},
+			APIKey:        apiKey,
+		},
 	}
 }
 
@@ -53,7 +60,7 @@ func (c *Client) request(method, endpoint string, body any, query any) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	req.Header.Set("Authorization", "Bearer "+c.Sync.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
