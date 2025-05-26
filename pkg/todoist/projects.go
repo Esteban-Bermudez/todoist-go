@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -65,8 +66,11 @@ type Collaborator struct {
 
 // GetProjects returns a list containing all active user projects and a cursor
 // for pagination. The cursor is nil if there are no more pages to return.
-func (c *Client) GetProjects(pagination *PaginationFilters) ([]Project, *string, error) {
-	res, err := c.request("GET", "/projects/", nil, pagination)
+func (c *Client) GetProjects(
+	ctx context.Context,
+	pagination *PaginationFilters,
+) ([]Project, *string, error) {
+	res, err := c.request(ctx, "GET", "/projects/", nil, pagination)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,8 +90,11 @@ func (c *Client) GetProjects(pagination *PaginationFilters) ([]Project, *string,
 
 // GetArchived returns a list containing all archived user projects and a cursor
 // for pagination. The cursor is nil if there are no more pages to return.
-func (c *Client) GetArchived(pagination *PaginationFilters) ([]Project, *string, error) {
-	res, err := c.request("GET", "/projects/archived", nil, pagination)
+func (c *Client) GetArchived(
+	ctx context.Context,
+	pagination *PaginationFilters,
+) ([]Project, *string, error) {
+	res, err := c.request(ctx, "GET", "/projects/archived", nil, pagination)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,11 +115,15 @@ func (c *Client) GetArchived(pagination *PaginationFilters) ([]Project, *string,
 // CreateProject creates a new project with the given name and options.
 // The name is required, and any additional options can be set in the
 // ProjectOptions
-func (c *Client) CreateProject(name string, options *ProjectOptions) (*Project, error) {
+func (c *Client) CreateProject(
+	ctx context.Context,
+	name string,
+	options *ProjectOptions,
+) (*Project, error) {
 	body := options
 	body.Name = name
 
-	res, err := c.request("POST", "/projects", body, nil)
+	res, err := c.request(ctx, "POST", "/projects", body, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +142,8 @@ func (c *Client) CreateProject(name string, options *ProjectOptions) (*Project, 
 }
 
 // GetProject returns a project related to the given projectId.
-func (c *Client) GetProject(projectId string) (*Project, error) {
-	res, err := c.request("GET", fmt.Sprintf("/projects/%s", projectId), nil, nil)
+func (c *Client) GetProject(ctx context.Context, projectId string) (*Project, error) {
+	res, err := c.request(ctx, "GET", fmt.Sprintf("/projects/%s", projectId), nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -152,8 +163,12 @@ func (c *Client) GetProject(projectId string) (*Project, error) {
 
 // UpdateProject updates a project with the given projectId with the given
 // ProjectOptions.
-func (c *Client) UpdateProject(projectId string, options *ProjectOptions) (*Project, error) {
-	res, err := c.request("POST", fmt.Sprintf("/projects/%s", projectId), options, nil)
+func (c *Client) UpdateProject(
+	ctx context.Context,
+	projectId string,
+	options *ProjectOptions,
+) (*Project, error) {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s", projectId), options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +187,8 @@ func (c *Client) UpdateProject(projectId string, options *ProjectOptions) (*Proj
 }
 
 // ArchiveProject archives a project with the given projectId.
-func (c *Client) ArchiveProject(projectId string) error {
-	res, err := c.request("POST", fmt.Sprintf("/projects/%s/archive", projectId), nil, nil)
+func (c *Client) ArchiveProject(ctx context.Context, projectId string) error {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/archive", projectId), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -187,8 +202,8 @@ func (c *Client) ArchiveProject(projectId string) error {
 }
 
 // UnarchiveProject unarchives a project with the given projectId.
-func (c *Client) UnarchiveProject(projectId string) error {
-	res, err := c.request("POST", fmt.Sprintf("/projects/%s/unarchive", projectId), nil, nil)
+func (c *Client) UnarchiveProject(ctx context.Context, projectId string) error {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/unarchive", projectId), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -202,8 +217,8 @@ func (c *Client) UnarchiveProject(projectId string) error {
 }
 
 // DeleteProject deletes a project with the given projectId.
-func (c *Client) DeleteProject(projectId string) error {
-	res, err := c.request("DELETE", fmt.Sprintf("/projects/%s", projectId), nil, nil)
+func (c *Client) DeleteProject(ctx context.Context, projectId string) error {
+	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/projects/%s", projectId), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -219,10 +234,12 @@ func (c *Client) DeleteProject(projectId string) error {
 // projectId and a cursor for pagination. The cursor is nil if there are no
 // more pages to return.
 func (c *Client) GetProjectCollaborators(
+	ctx context.Context,
 	projectId string,
 	pagination *PaginationFilters,
 ) ([]Collaborator, *string, error) {
 	res, err := c.request(
+		ctx,
 		"GET",
 		fmt.Sprintf("/projects/%s/collaborators", projectId),
 		nil,

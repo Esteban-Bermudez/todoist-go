@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -50,7 +51,7 @@ type TaskOptions struct {
 	DueDate      string   `json:"due_date,omitempty"`
 	DueDateTime  string   `json:"due_datetime,omitempty"`
 	DueLang      string   `json:"due_lang,omitempty"`
-	Duration     int      `json:"duration,omitempty"` // If duration is set, duration_unit must also be set
+	Duration     int      `json:"duration,omitempty"`      // If duration is set, duration_unit must also be set
 	DurationUnit string   `json:"duration_unit,omitempty"` // The unit of the duration has to be "day" or "minute".
 	DeadlineDate string   `json:"deadline_date,omitempty"`
 	DeadlineLang string   `json:"deadline_lang,omitempty"`
@@ -68,14 +69,18 @@ type TaskFilters struct {
 	PaginationFilters
 }
 
-func (c *Client) CreateTask(content string, options *TaskOptions) (*Task, error) {
+func (c *Client) CreateTask(
+	ctx context.Context,
+	content string,
+	options *TaskOptions,
+) (*Task, error) {
 	body := options
 	if body == nil {
 		body = &TaskOptions{}
 	}
 	body.Content = content
 
-	res, err := c.request("POST", "/tasks", body, nil)
+	res, err := c.request(ctx, "POST", "/tasks", body, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +100,8 @@ func (c *Client) CreateTask(content string, options *TaskOptions) (*Task, error)
 
 // GetTasks returns a list containing all active user tasks and a cursor for
 // pagination. The cursor is nil if there are no more pages to return.
-func (c *Client) GetTasks(filters *TaskFilters) ([]Task, *string, error) {
-	res, err := c.request("GET", "/tasks", nil, filters)
+func (c *Client) GetTasks(ctx context.Context, filters *TaskFilters) ([]Task, *string, error) {
+	res, err := c.request(ctx, "GET", "/tasks", nil, filters)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -124,13 +129,17 @@ func (c *Client) GetTasks(filters *TaskFilters) ([]Task, *string, error) {
 // Todoist uses to create tasks with natural language processing. The text
 // parameter is the text of the task to create. The options parameter is
 // optional if you want to set additional options for the task.
-func (c *Client) QuickAddTask(text string, options *TaskOptions) (*Task, error) {
+func (c *Client) QuickAddTask(
+	ctx context.Context,
+	text string,
+	options *TaskOptions,
+) (*Task, error) {
 	body := struct {
 		Text string `json:"text"`
 	}{
 		Text: text,
 	}
-	res, err := c.request("POST", "/tasks/quick", body, nil)
+	res, err := c.request(ctx, "POST", "/tasks/quick", body, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +157,8 @@ func (c *Client) QuickAddTask(text string, options *TaskOptions) (*Task, error) 
 
 // ReopenTask reopens a task that has been completed. The taskID parameter is
 // the ID of the task to reopen.
-func (c *Client) ReopenTask(taskID string) error {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil, nil)
+func (c *Client) ReopenTask(ctx context.Context, taskID string) error {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -163,8 +172,8 @@ func (c *Client) ReopenTask(taskID string) error {
 
 // CloseTask closes a task that has been completed. The taskID parameter is
 // the ID of the task to close.
-func (c *Client) CloseTask(taskID string) error {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s/close", taskID), nil, nil)
+func (c *Client) CloseTask(ctx context.Context, taskID string) error {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/close", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -180,8 +189,8 @@ func (c *Client) CloseTask(taskID string) error {
 
 // GetTask returns a task related to the given taskID. The taskID parameter
 // is the ID of the task to get. The taskID parameter is required.
-func (c *Client) GetTask(taskID string) (*Task, error) {
-	res, err := c.request("GET", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
+func (c *Client) GetTask(ctx context.Context, taskID string) (*Task, error) {
+	res, err := c.request(ctx, "GET", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -200,8 +209,12 @@ func (c *Client) GetTask(taskID string) (*Task, error) {
 }
 
 // UpdateTask updates a task with the given taskID with the given TaskOptions.
-func (c *Client) UpdateTask(taskID string, options *TaskOptions) (*Task, error) {
-	res, err := c.request("POST", fmt.Sprintf("/tasks/%s", taskID), options, nil)
+func (c *Client) UpdateTask(
+	ctx context.Context,
+	taskID string,
+	options *TaskOptions,
+) (*Task, error) {
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s", taskID), options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +234,8 @@ func (c *Client) UpdateTask(taskID string, options *TaskOptions) (*Task, error) 
 
 // DeleteTask deletes a task with the given taskID. The taskID parameter is the
 // ID of the task to delete. The taskID parameter is required.
-func (c *Client) DeleteTask(taskID string) error {
-	res, err := c.request("DELETE", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
+func (c *Client) DeleteTask(ctx context.Context, taskID string) error {
+	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
 		return err
 	}
