@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +29,7 @@ type Command struct {
 	TempID string         `json:"temp_id,omitempty"`
 }
 
-func (s *Sync) ReadResources(resourceTypes []string) (any, error) {
+func (s *Sync) ReadResources(resourceTypes []string) (map[string]any, error) {
 	if resourceTypes != nil {
 		s.ResourceTypes = resourceTypes
 	} else {
@@ -43,18 +44,19 @@ func (s *Sync) ReadResources(resourceTypes []string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to sync: %s", resp.Status)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	// parse the respone.body and return a map string to any to show the json
+	var result map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
-	defer resp.Body.Close()
 
-	return body, nil
+	return result, nil
 }
 
 func (s *Sync) request(body io.Reader) (*http.Response, error) {
