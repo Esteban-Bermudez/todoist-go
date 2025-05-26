@@ -2,6 +2,7 @@ package todoist
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,7 +33,12 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
-func (c *Client) request(method, endpoint string, body any, query any) (*http.Response, error) {
+func (c *Client) request(
+	ctx context.Context,
+	method, endpoint string,
+	body any,
+	query any,
+) (*http.Response, error) {
 	requestURL, err := url.Parse(c.BaseURL + endpoint)
 	if err != nil {
 		return nil, err
@@ -56,7 +62,7 @@ func (c *Client) request(method, endpoint string, body any, query any) (*http.Re
 		reqBody = bytes.NewReader(nil)
 	}
 
-	req, err := http.NewRequest(method, requestURL.String(), reqBody)
+	req, err := http.NewRequestWithContext(ctx, method, requestURL.String(), reqBody)
 	if err != nil {
 		return nil, err
 	}

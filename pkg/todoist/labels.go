@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -41,8 +42,11 @@ type LabelOptions struct {
 // By default, the names of a user's personal labels will also be included.
 // These can be excluded by passing the OmitPersonal field in the
 // SharedLabelFilters.
-func (c *Client) SharedLabels(filters *SharedLabelFilters) ([]string, *string, error) {
-	res, err := c.request("GET", "/labels/shared", filters, nil)
+func (c *Client) SharedLabels(
+	ctx context.Context,
+	filters *SharedLabelFilters,
+) ([]string, *string, error) {
+	res, err := c.request(ctx, "GET", "/labels/shared", filters, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get shared labels: %w", err)
 	}
@@ -62,8 +66,11 @@ func (c *Client) SharedLabels(filters *SharedLabelFilters) ([]string, *string, e
 }
 
 // GetLabels returns a list of all user labels.
-func (c *Client) GetLabels(filters *PaginationFilters) ([]Label, *string, error) {
-	res, err := c.request("GET", "/labels", nil, filters)
+func (c *Client) GetLabels(
+	ctx context.Context,
+	filters *PaginationFilters,
+) ([]Label, *string, error) {
+	res, err := c.request(ctx, "GET", "/labels", nil, filters)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get labels: %w", err)
 	}
@@ -84,7 +91,11 @@ func (c *Client) GetLabels(filters *PaginationFilters) ([]Label, *string, error)
 
 // CreateLabel creates a new personal label with the given name.
 // The name is required and will override the value in the LabelOptions.
-func (c *Client) CreateLabel(name string, options *LabelOptions) (*Label, error) {
+func (c *Client) CreateLabel(
+	ctx context.Context,
+	name string,
+	options *LabelOptions,
+) (*Label, error) {
 	if name == "" {
 		return nil, fmt.Errorf("label name is required")
 	}
@@ -95,7 +106,7 @@ func (c *Client) CreateLabel(name string, options *LabelOptions) (*Label, error)
 
 	options.Name = name
 
-	res, err := c.request("POST", "/labels", options, nil)
+	res, err := c.request(ctx, "POST", "/labels", options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create label: %w", err)
 	}
@@ -117,12 +128,12 @@ func (c *Client) CreateLabel(name string, options *LabelOptions) (*Label, error)
 // SharedLabelsRemove removes the given shared label from all active tasks. If
 // no instances of the label name are found, the request will still be
 // considered successful.
-func (c *Client) SharedLabelsRemove(name string) error {
+func (c *Client) SharedLabelsRemove(ctx context.Context, name string) error {
 	if name == "" {
 		return fmt.Errorf("label name is required")
 	}
 
-	res, err := c.request("POST", "/labels/shared/remove", LabelOptions{Name: name}, nil)
+	res, err := c.request(ctx, "POST", "/labels/shared/remove", LabelOptions{Name: name}, nil)
 	if err != nil {
 		return fmt.Errorf("failed to remove shared label: %w", err)
 	}
@@ -136,7 +147,7 @@ func (c *Client) SharedLabelsRemove(name string) error {
 }
 
 // SharedLabelsRename renames the given shared label from all active tasks.
-func (c *Client) SharedLabelsRename(name string, newName string) error {
+func (c *Client) SharedLabelsRename(ctx context.Context, name string, newName string) error {
 	if name == "" {
 		return fmt.Errorf("label name is required")
 	}
@@ -145,6 +156,7 @@ func (c *Client) SharedLabelsRename(name string, newName string) error {
 	}
 
 	res, err := c.request(
+		ctx,
 		"POST",
 		"/labels/shared/rename",
 		SharedLabelOptions{NewName: newName},
@@ -164,12 +176,12 @@ func (c *Client) SharedLabelsRename(name string, newName string) error {
 
 // DeleteLabel deletes a personal label by its ID. All instances of the label
 // will be removed from tasks.
-func (c *Client) DeleteLabel(id string) error {
+func (c *Client) DeleteLabel(ctx context.Context, id string) error {
 	if id == "" {
 		return fmt.Errorf("label ID is required")
 	}
 
-	res, err := c.request("DELETE", fmt.Sprintf("/labels/%s", id), nil, nil)
+	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/labels/%s", id), nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete label: %w", err)
 	}
@@ -183,12 +195,12 @@ func (c *Client) DeleteLabel(id string) error {
 }
 
 // GetLabel returns a label by its ID.
-func (c *Client) GetLabel(id string) (*Label, error) {
+func (c *Client) GetLabel(ctx context.Context, id string) (*Label, error) {
 	if id == "" {
 		return nil, fmt.Errorf("label ID is required")
 	}
 
-	res, err := c.request("GET", fmt.Sprintf("/labels/%s", id), nil, nil)
+	res, err := c.request(ctx, "GET", fmt.Sprintf("/labels/%s", id), nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get label: %w", err)
 	}
@@ -209,7 +221,11 @@ func (c *Client) GetLabel(id string) (*Label, error) {
 
 // UpdateLabel updates a label by its ID. The ID is required, and the
 // LabelOptions are required to specify the fields to update.
-func (c *Client) UpdateLabel(id string, options *LabelOptions) (*Label, error) {
+func (c *Client) UpdateLabel(
+	ctx context.Context,
+	id string,
+	options *LabelOptions,
+) (*Label, error) {
 	if id == "" {
 		return nil, fmt.Errorf("label ID is required")
 	}
@@ -217,7 +233,7 @@ func (c *Client) UpdateLabel(id string, options *LabelOptions) (*Label, error) {
 		return nil, fmt.Errorf("options are required")
 	}
 
-	res, err := c.request("POST", fmt.Sprintf("/labels/%s", id), options, nil)
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/labels/%s", id), options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update label: %w", err)
 	}

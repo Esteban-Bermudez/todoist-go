@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -38,6 +39,7 @@ type SectionOptions struct {
 // CreateSection creates a new section in the specified project. The parameters
 // name and projectID are required. They will override the values in options.
 func (c *Client) CreateSection(
+	ctx context.Context,
 	name string,
 	projectID string,
 	options *SectionOptions,
@@ -56,7 +58,7 @@ func (c *Client) CreateSection(
 	options.Name = name
 	options.ProjectID = projectID
 
-	res, err := c.request("POST", "/sections", options, nil)
+	res, err := c.request(ctx, "POST", "/sections", options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create section: %w", err)
 	}
@@ -77,8 +79,11 @@ func (c *Client) CreateSection(
 
 // GetSections returns a list of all active sections for the user
 // or a specific project if filters.ProjectID is provided.
-func (c *Client) GetSections(filters *SectionFilters) ([]Section, *string, error) {
-	res, err := c.request("GET", "/sections", nil, filters)
+func (c *Client) GetSections(
+	ctx context.Context,
+	filters *SectionFilters,
+) ([]Section, *string, error) {
+	res, err := c.request(ctx, "GET", "/sections", nil, filters)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get sections: %w", err)
 	}
@@ -98,12 +103,12 @@ func (c *Client) GetSections(filters *SectionFilters) ([]Section, *string, error
 }
 
 // GetSection returns the section for the given section ID
-func (c *Client) GetSection(id string) (*Section, error) {
+func (c *Client) GetSection(ctx context.Context, id string) (*Section, error) {
 	if id == "" {
 		return nil, fmt.Errorf("section ID is required")
 	}
 
-	res, err := c.request("GET", fmt.Sprintf("/sections/%s", id), nil, nil)
+	res, err := c.request(ctx, "GET", fmt.Sprintf("/sections/%s", id), nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get section: %w", err)
 	}
@@ -123,7 +128,7 @@ func (c *Client) GetSection(id string) (*Section, error) {
 }
 
 // UpdateSection updates the section name with the given ID.
-func (c *Client) UpdateSection(id string, name string) (*Section, error) {
+func (c *Client) UpdateSection(ctx context.Context, id string, name string) (*Section, error) {
 	if id == "" {
 		return nil, fmt.Errorf("section ID is required")
 	}
@@ -135,7 +140,7 @@ func (c *Client) UpdateSection(id string, name string) (*Section, error) {
 		Name: name,
 	}
 
-	res, err := c.request("POST", fmt.Sprintf("/sections/%s", id), options, nil)
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/sections/%s", id), options, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update section: %w", err)
 	}
@@ -155,12 +160,12 @@ func (c *Client) UpdateSection(id string, name string) (*Section, error) {
 }
 
 // DeleteSection deletes the section with the given ID and all of its tasks.
-func (c *Client) DeleteSection(id string) error {
+func (c *Client) DeleteSection(ctx context.Context, id string) error {
 	if id == "" {
 		return fmt.Errorf("section ID is required")
 	}
 
-	res, err := c.request("DELETE", fmt.Sprintf("/sections/%s", id), nil, nil)
+	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/sections/%s", id), nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete section: %w", err)
 	}

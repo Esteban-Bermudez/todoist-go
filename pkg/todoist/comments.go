@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -38,7 +39,10 @@ type CommentOptions struct {
 
 // GetComments returns a list of all comments for a given task_id or project_id
 // Exactly one of filters.TaskID or filters.ProjectID must be non-empty.
-func (c *Client) GetComments(filters CommentFilters) ([]Comment, *string, error) {
+func (c *Client) GetComments(
+	ctx context.Context,
+	filters CommentFilters,
+) ([]Comment, *string, error) {
 	if filters.TaskID == "" && filters.ProjectID == "" {
 		return nil, nil, fmt.Errorf("either TaskID or ProjectID must be provided in filters")
 	}
@@ -46,7 +50,7 @@ func (c *Client) GetComments(filters CommentFilters) ([]Comment, *string, error)
 		return nil, nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
 	}
 
-	res, err := c.request("GET", "/comments", nil, filters)
+	res, err := c.request(ctx, "GET", "/comments", nil, filters)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to make get all comments request: %w", err)
 	}
@@ -66,7 +70,11 @@ func (c *Client) GetComments(filters CommentFilters) ([]Comment, *string, error)
 
 // CreateComment creates a new comment on a task or project.
 // content is required. Exactly one of options.TaskID or options.ProjectID must be non-empty.
-func (c *Client) CreateComment(content string, options *CommentOptions) (*Comment, error) {
+func (c *Client) CreateComment(
+	ctx context.Context,
+	content string,
+	options *CommentOptions,
+) (*Comment, error) {
 	if content == "" {
 		return nil, fmt.Errorf("comment content cannot be empty")
 	}
@@ -80,7 +88,7 @@ func (c *Client) CreateComment(content string, options *CommentOptions) (*Commen
 	body := options
 	body.Content = content // Set the content in the options struct
 
-	res, err := c.request("POST", "/comments", body, nil)
+	res, err := c.request(ctx, "POST", "/comments", body, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make create comment request: %w", err)
 	}
@@ -99,12 +107,12 @@ func (c *Client) CreateComment(content string, options *CommentOptions) (*Commen
 }
 
 // GetComment retrieves a single comment by its ID.
-func (c *Client) GetComment(commentID string) (*Comment, error) {
+func (c *Client) GetComment(ctx context.Context, commentID string) (*Comment, error) {
 	if commentID == "" {
 		return nil, fmt.Errorf("comment ID cannot be empty")
 	}
 
-	res, err := c.request("GET", fmt.Sprintf("/comments/%s", commentID), nil, nil)
+	res, err := c.request(ctx, "GET", fmt.Sprintf("/comments/%s", commentID), nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make get comment request: %w", err)
 	}
@@ -123,12 +131,16 @@ func (c *Client) GetComment(commentID string) (*Comment, error) {
 }
 
 // UpdateComment updates an existing comment's content by its ID.
-func (c *Client) UpdateComment(commentID string, content string) (*Comment, error) {
+func (c *Client) UpdateComment(
+	ctx context.Context,
+	commentID string,
+	content string,
+) (*Comment, error) {
 	body := CommentOptions{
 		Content: content,
 	}
 
-	res, err := c.request("POST", fmt.Sprintf("/comments/%s", commentID), body, nil)
+	res, err := c.request(ctx, "POST", fmt.Sprintf("/comments/%s", commentID), body, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make update comment request: %w", err)
 	}
@@ -147,10 +159,10 @@ func (c *Client) UpdateComment(commentID string, content string) (*Comment, erro
 }
 
 // DeleteComment deletes a comment by its ID.
-func (c *Client) DeleteComment(commentID string) error {
+func (c *Client) DeleteComment(ctx context.Context, commentID string) error {
 	endpoint := fmt.Sprintf("/comments/%s", commentID)
 
-	res, err := c.request("DELETE", endpoint, nil, nil)
+	res, err := c.request(ctx, "DELETE", endpoint, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to make delete comment request: %w", err)
 	}
