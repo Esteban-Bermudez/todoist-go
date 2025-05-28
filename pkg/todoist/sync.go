@@ -1,4 +1,4 @@
-package sync
+package todoist
 
 import (
 	"context"
@@ -30,7 +30,7 @@ type Command struct {
 	TempID string         `json:"temp_id,omitempty"`
 }
 
-func (s *Sync) ReadResources(ctx context.Context, resourceTypes []string) (map[string]any, error) {
+func (s *Sync) ReadResources(ctx context.Context, resourceTypes []string) (*SyncReadResponse, error) {
 	if resourceTypes != nil {
 		s.ResourceTypes = resourceTypes
 	} else {
@@ -52,12 +52,12 @@ func (s *Sync) ReadResources(ctx context.Context, resourceTypes []string) (map[s
 	}
 
 	// parse the respone.body and return a map string to any to show the json
-	var result map[string]any
+	var result SyncReadResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
 
-	return result, nil
+	return &result, nil
 }
 
 func (s *Sync) request(ctx context.Context, body io.Reader) (*http.Response, error) {

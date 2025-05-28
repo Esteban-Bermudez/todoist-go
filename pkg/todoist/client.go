@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-
-	"github.com/Esteban-Bermudez/todoist-go/pkg/todoist/sync"
 )
 
 type APIError struct {
@@ -29,7 +27,7 @@ func (e *APIError) Error() string {
 // for making requests to the Todoist API.
 type Client struct {
 	BaseURL string
-	Sync    *sync.Sync
+	Sync    *Sync
 }
 
 // NewClient creates a new Todoist API client with the provided API key.
@@ -38,10 +36,10 @@ type Client struct {
 func NewClient(apiKey string) *Client {
 	return &Client{
 		BaseURL: "https://api.todoist.com/api/v1",
-		Sync: &sync.Sync{
+		Sync: &Sync{
 			SyncToken:     "*",
 			ResourceTypes: []string{},
-			Commands:      []sync.Command{},
+			Commands:      []Command{},
 			APIKey:        apiKey,
 		},
 	}
