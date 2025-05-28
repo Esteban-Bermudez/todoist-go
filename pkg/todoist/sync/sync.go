@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,7 +30,7 @@ type Command struct {
 	TempID string         `json:"temp_id,omitempty"`
 }
 
-func (s *Sync) ReadResources(resourceTypes []string) (map[string]any, error) {
+func (s *Sync) ReadResources(ctx context.Context, resourceTypes []string) (map[string]any, error) {
 	if resourceTypes != nil {
 		s.ResourceTypes = resourceTypes
 	} else {
@@ -40,7 +41,7 @@ func (s *Sync) ReadResources(resourceTypes []string) (map[string]any, error) {
 	data.Set("sync_token", s.SyncToken)
 	data.Set("resource_types", `["`+strings.Join(s.ResourceTypes, `","`)+`"]`)
 
-	resp, err := s.request(strings.NewReader((data.Encode())))
+	resp, err := s.request(ctx, strings.NewReader((data.Encode())))
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +60,8 @@ func (s *Sync) ReadResources(resourceTypes []string) (map[string]any, error) {
 	return result, nil
 }
 
-func (s *Sync) request(body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest("POST", "https://api.todoist.com/api/v1/sync", body)
+func (s *Sync) request(ctx context.Context, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.todoist.com/api/v1/sync", body)
 	if err != nil {
 		panic(err)
 	}
