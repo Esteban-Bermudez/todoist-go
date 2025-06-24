@@ -120,6 +120,12 @@ func (c *Client) CreateProject(
 	name string,
 	options *ProjectOptions,
 ) (*Project, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+	if options == nil {
+		options = &ProjectOptions{}
+	}
 	body := options
 	body.Name = name
 
