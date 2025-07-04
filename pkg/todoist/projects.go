@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 // Project represents a Todoist project.
@@ -72,13 +71,9 @@ func (c *Client) GetProjects(
 ) ([]Project, *string, error) {
 	res, err := c.request(ctx, "GET", "/projects/", nil, pagination)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to get projects: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var pagiResp PaginationResponse[Project]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
@@ -96,13 +91,9 @@ func (c *Client) GetArchived(
 ) ([]Project, *string, error) {
 	res, err := c.request(ctx, "GET", "/projects/archived", nil, pagination)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to get archived projects: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var pagiResp PaginationResponse[Project]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
@@ -131,13 +122,9 @@ func (c *Client) CreateProject(
 
 	res, err := c.request(ctx, "POST", "/projects", body, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create project: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var project Project
 	err = json.NewDecoder(res.Body).Decode(&project)
@@ -151,13 +138,9 @@ func (c *Client) CreateProject(
 func (c *Client) GetProject(ctx context.Context, projectId string) (*Project, error) {
 	res, err := c.request(ctx, "GET", fmt.Sprintf("/projects/%s", projectId), nil, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get project: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var project Project
 	err = json.NewDecoder(res.Body).Decode(&project)
@@ -176,13 +159,9 @@ func (c *Client) UpdateProject(
 ) (*Project, error) {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s", projectId), options, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update project: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var project Project
 	err = json.NewDecoder(res.Body).Decode(&project)
@@ -196,13 +175,9 @@ func (c *Client) UpdateProject(
 func (c *Client) ArchiveProject(ctx context.Context, projectId string) error {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/archive", projectId), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to archive project: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	return nil
 }
@@ -211,13 +186,9 @@ func (c *Client) ArchiveProject(ctx context.Context, projectId string) error {
 func (c *Client) UnarchiveProject(ctx context.Context, projectId string) error {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/unarchive", projectId), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unarchive project: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	return nil
 }
@@ -226,13 +197,10 @@ func (c *Client) UnarchiveProject(ctx context.Context, projectId string) error {
 func (c *Client) DeleteProject(ctx context.Context, projectId string) error {
 	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/projects/%s", projectId), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete project: %w", err)
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 	return nil
 }
 
@@ -252,13 +220,9 @@ func (c *Client) GetProjectCollaborators(
 		pagination,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to get project collaborators: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var pagiResp PaginationResponse[Collaborator]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)

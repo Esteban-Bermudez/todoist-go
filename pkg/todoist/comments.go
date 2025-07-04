@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 // Comment represents a Todoist comment on a task or project.
@@ -56,10 +55,6 @@ func (c *Client) GetComments(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("get all comments unexpected status code: %d", res.StatusCode)
-	}
-
 	var pagiResp PaginationResponse[Comment]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
@@ -94,10 +89,6 @@ func (c *Client) CreateComment(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("create comment unexpected status code: %d", res.StatusCode)
-	}
-
 	var comment Comment
 	err = json.NewDecoder(res.Body).Decode(&comment)
 	if err != nil {
@@ -117,10 +108,6 @@ func (c *Client) GetComment(ctx context.Context, commentID string) (*Comment, er
 		return nil, fmt.Errorf("failed to make get comment request: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("get comment unexpected status code: %d", res.StatusCode)
-	}
 
 	var comment Comment
 	err = json.NewDecoder(res.Body).Decode(&comment)
@@ -146,10 +133,6 @@ func (c *Client) UpdateComment(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("update comment unexpected status code: %d", res.StatusCode)
-	}
-
 	var comment Comment
 	err = json.NewDecoder(res.Body).Decode(&comment)
 	if err != nil {
@@ -167,10 +150,6 @@ func (c *Client) DeleteComment(ctx context.Context, commentID string) error {
 		return fmt.Errorf("failed to make delete comment request: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("delete comment unexpected status code: %d", res.StatusCode)
-	}
 
 	return nil
 }
