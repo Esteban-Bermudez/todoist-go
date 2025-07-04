@@ -52,10 +52,6 @@ func (c *Client) SharedLabels(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("get shared labels unexpected status code: %d", res.StatusCode)
-	}
-
 	var pagiResp PaginationResponse[string]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
@@ -75,10 +71,6 @@ func (c *Client) GetLabels(
 		return nil, nil, fmt.Errorf("failed to get labels: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("get labels unexpected status code: %d", res.StatusCode)
-	}
 
 	var pagiResp PaginationResponse[Label]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
@@ -112,10 +104,6 @@ func (c *Client) CreateLabel(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("create label unexpected status code: %d", res.StatusCode)
-	}
-
 	var label Label
 	err = json.NewDecoder(res.Body).Decode(&label)
 	if err != nil {
@@ -138,10 +126,6 @@ func (c *Client) SharedLabelsRemove(ctx context.Context, name string) error {
 		return fmt.Errorf("failed to remove shared label: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("remove shared label unexpected status code: %d", res.StatusCode)
-	}
 
 	return nil
 }
@@ -167,10 +151,6 @@ func (c *Client) SharedLabelsRename(ctx context.Context, name string, newName st
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("rename shared label unexpected status code: %d", res.StatusCode)
-	}
-
 	return nil
 }
 
@@ -187,10 +167,6 @@ func (c *Client) DeleteLabel(ctx context.Context, id string) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("delete label unexpected status code: %d", res.StatusCode)
-	}
-
 	return nil
 }
 
@@ -205,10 +181,6 @@ func (c *Client) GetLabel(ctx context.Context, id string) (*Label, error) {
 		return nil, fmt.Errorf("failed to get label: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("get label unexpected status code: %d", res.StatusCode)
-	}
 
 	var label Label
 	err = json.NewDecoder(res.Body).Decode(&label)
@@ -238,10 +210,6 @@ func (c *Client) UpdateLabel(
 		return nil, fmt.Errorf("failed to update label: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("update label unexpected status code: %d", res.StatusCode)
-	}
 
 	var label Label
 	err = json.NewDecoder(res.Body).Decode(&label)

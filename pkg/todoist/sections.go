@@ -64,10 +64,6 @@ func (c *Client) CreateSection(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("create section unexpected status code: %d", res.StatusCode)
-	}
-
 	var section Section
 	err = json.NewDecoder(res.Body).Decode(&section)
 	if err != nil {
@@ -89,10 +85,6 @@ func (c *Client) GetSections(
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("get sections unexpected status code: %d", res.StatusCode)
-	}
-
 	var pagiResp PaginationResponse[Section]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
@@ -113,10 +105,6 @@ func (c *Client) GetSection(ctx context.Context, id string) (*Section, error) {
 		return nil, fmt.Errorf("failed to get section: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("get section unexpected status code: %d", res.StatusCode)
-	}
 
 	var section Section
 	err = json.NewDecoder(res.Body).Decode(&section)
@@ -146,10 +134,6 @@ func (c *Client) UpdateSection(ctx context.Context, id string, name string) (*Se
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("update section unexpected status code: %d", res.StatusCode)
-	}
-
 	var section Section
 	err = json.NewDecoder(res.Body).Decode(&section)
 	if err != nil {
@@ -170,10 +154,6 @@ func (c *Client) DeleteSection(ctx context.Context, id string) error {
 		return fmt.Errorf("failed to delete section: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("delete section unexpected status code: %d", res.StatusCode)
-	}
 
 	return nil
 }

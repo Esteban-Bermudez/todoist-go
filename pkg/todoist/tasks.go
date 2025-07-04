@@ -82,13 +82,9 @@ func (c *Client) CreateTask(
 
 	res, err := c.request(ctx, "POST", "/tasks", body, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create task: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var task Task
 	err = json.NewDecoder(res.Body).Decode(&task)
@@ -103,13 +99,9 @@ func (c *Client) CreateTask(
 func (c *Client) GetTasks(ctx context.Context, filters *TaskFilters) ([]Task, *string, error) {
 	res, err := c.request(ctx, "GET", "/tasks", nil, filters)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to get tasks: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var pagiResp PaginationResponse[Task]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
@@ -141,12 +133,10 @@ func (c *Client) QuickAddTask(
 	}
 	res, err := c.request(ctx, "POST", "/tasks/quick", body, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to quick add task: %w", err)
 	}
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
+
 	var task Task
 	err = json.NewDecoder(res.Body).Decode(&task)
 	if err != nil {
@@ -160,13 +150,10 @@ func (c *Client) QuickAddTask(
 func (c *Client) ReopenTask(ctx context.Context, taskID string) error {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reopen task: %w", err)
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 	return nil
 }
 
@@ -175,13 +162,10 @@ func (c *Client) ReopenTask(ctx context.Context, taskID string) error {
 func (c *Client) CloseTask(ctx context.Context, taskID string) error {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/close", taskID), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to close task: %w", err)
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 	return nil
 }
 
@@ -192,13 +176,9 @@ func (c *Client) CloseTask(ctx context.Context, taskID string) error {
 func (c *Client) GetTask(ctx context.Context, taskID string) (*Task, error) {
 	res, err := c.request(ctx, "GET", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get task: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var task Task
 	err = json.NewDecoder(res.Body).Decode(&task)
@@ -216,13 +196,9 @@ func (c *Client) UpdateTask(
 ) (*Task, error) {
 	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s", taskID), options, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update task: %w", err)
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 
 	var task Task
 	err = json.NewDecoder(res.Body).Decode(&task)
@@ -237,12 +213,9 @@ func (c *Client) UpdateTask(
 func (c *Client) DeleteTask(ctx context.Context, taskID string) error {
 	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete task: %w", err)
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
 	return nil
 }

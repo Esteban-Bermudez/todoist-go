@@ -5,11 +5,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/Esteban-Bermudez/todoist-go/pkg/todoist/sync"
 )
+
+type APIError struct {
+	Status       string
+	ResponseBody []byte
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf(
+		"API error: status %s, response: %s",
+		e.Status,
+		string(e.ResponseBody)[:100], // Limit to first 100 characters for readability
+	)
+}
 
 // Client represents a Todoist API client. It contains the API key and base URL
 // for making requests to the Todoist API.
@@ -51,18 +65,20 @@ func (c *Client) request(
 		}
 	}
 
-	var reqBody *bytes.Reader
+	var reqBody []byte
 	if body != nil {
-		jsonData, err := json.Marshal(body)
+		reqBody, err = json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
-		reqBody = bytes.NewReader(jsonData)
-	} else {
-		reqBody = bytes.NewReader(nil)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, requestURL.String(), reqBody)
+	req, err := http.NewRequestWithContext(
+		ctx,
+		method,
+		requestURL.String(),
+		bytes.NewReader(reqBody),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +86,21 @@ func (c *Client) request(
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	return client.Do(req)
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode >= 400 {
+		resBody, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		return nil, &APIError{
+			Status:       res.Status,
+			ResponseBody: resBody,
+		}
+	}
+
+	return res, nil
 }
 
 func addQueryParams(requestURL *url.URL, query any) (*url.URL, error) {
