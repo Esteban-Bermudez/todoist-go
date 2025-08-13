@@ -87,7 +87,10 @@ func (c *Client) GetSections(
 	var pagiResp PaginationResponse[Section]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to decode sections response: %w", err)
+		return nil, nil, fmt.Errorf(
+			"failed to decode sections response: %w",
+			err,
+		)
 	}
 
 	return pagiResp.Results, pagiResp.NextCursor, nil
@@ -115,7 +118,11 @@ func (c *Client) GetSection(ctx context.Context, id string) (*Section, error) {
 }
 
 // UpdateSection updates the section name with the given ID.
-func (c *Client) UpdateSection(ctx context.Context, id string, name string) (*Section, error) {
+func (c *Client) UpdateSection(
+	ctx context.Context,
+	id string,
+	name string,
+) (*Section, error) {
 	if id == "" {
 		return nil, fmt.Errorf("section ID is required")
 	}
@@ -127,7 +134,13 @@ func (c *Client) UpdateSection(ctx context.Context, id string, name string) (*Se
 		Name: name,
 	}
 
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/sections/%s", id), options, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/sections/%s", id),
+		options,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update section: %w", err)
 	}
@@ -148,7 +161,13 @@ func (c *Client) DeleteSection(ctx context.Context, id string) error {
 		return fmt.Errorf("section ID is required")
 	}
 
-	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/sections/%s", id), nil, nil)
+	res, err := c.request(
+		ctx,
+		"DELETE",
+		fmt.Sprintf("/sections/%s", id),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to delete section: %w", err)
 	}

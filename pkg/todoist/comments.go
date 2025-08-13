@@ -27,7 +27,8 @@ type CommentFilters struct {
 }
 
 // CommentOptions holds the parameters for creating a new comment.
-// Exactly one of TaskID or ProjectID must be provided. Content is handled separately.
+// Exactly one of TaskID or ProjectID must be provided. Content is handled
+// separately.
 type CommentOptions struct {
 	Content      string          `json:"content"` // Required content for the comment
 	TaskID       string          `json:"task_id,omitempty"`
@@ -43,15 +44,22 @@ func (c *Client) GetComments(
 	filters CommentFilters,
 ) ([]Comment, *string, error) {
 	if filters.TaskID == "" && filters.ProjectID == "" {
-		return nil, nil, fmt.Errorf("either TaskID or ProjectID must be provided in filters")
+		return nil, nil, fmt.Errorf(
+			"either TaskID or ProjectID must be provided in filters",
+		)
 	}
 	if filters.TaskID != "" && filters.ProjectID != "" {
-		return nil, nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
+		return nil, nil, fmt.Errorf(
+			"provide either TaskID or ProjectID, not both",
+		)
 	}
 
 	res, err := c.request(ctx, "GET", "/comments", nil, filters)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to make get all comments request: %w", err)
+		return nil, nil, fmt.Errorf(
+			"failed to make get all comments request: %w",
+			err,
+		)
 	}
 	defer res.Body.Close()
 
@@ -64,7 +72,8 @@ func (c *Client) GetComments(
 }
 
 // CreateComment creates a new comment on a task or project.
-// content is required. Exactly one of options.TaskID or options.ProjectID must be non-empty.
+// content is required. Exactly one of options.TaskID or options.ProjectID must
+// be non-empty.
 func (c *Client) CreateComment(
 	ctx context.Context,
 	content string,
@@ -74,7 +83,9 @@ func (c *Client) CreateComment(
 		return nil, fmt.Errorf("comment content cannot be empty")
 	}
 	if options == nil || (options.TaskID == "" && options.ProjectID == "") {
-		return nil, fmt.Errorf("either TaskID or ProjectID must be provided in options")
+		return nil, fmt.Errorf(
+			"either TaskID or ProjectID must be provided in options",
+		)
 	}
 	if options.TaskID != "" && options.ProjectID != "" {
 		return nil, fmt.Errorf("provide either TaskID or ProjectID, not both")
@@ -92,18 +103,30 @@ func (c *Client) CreateComment(
 	var comment Comment
 	err = json.NewDecoder(res.Body).Decode(&comment)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode create comment response: %w", err)
+		return nil, fmt.Errorf(
+			"failed to decode create comment response: %w",
+			err,
+		)
 	}
 	return &comment, nil // Return the created comment object
 }
 
 // GetComment retrieves a single comment by its ID.
-func (c *Client) GetComment(ctx context.Context, commentID string) (*Comment, error) {
+func (c *Client) GetComment(
+	ctx context.Context,
+	commentID string,
+) (*Comment, error) {
 	if commentID == "" {
 		return nil, fmt.Errorf("comment ID cannot be empty")
 	}
 
-	res, err := c.request(ctx, "GET", fmt.Sprintf("/comments/%s", commentID), nil, nil)
+	res, err := c.request(
+		ctx,
+		"GET",
+		fmt.Sprintf("/comments/%s", commentID),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make get comment request: %w", err)
 	}
@@ -127,7 +150,13 @@ func (c *Client) UpdateComment(
 		Content: content,
 	}
 
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/comments/%s", commentID), body, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/comments/%s", commentID),
+		body,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make update comment request: %w", err)
 	}
@@ -136,7 +165,10 @@ func (c *Client) UpdateComment(
 	var comment Comment
 	err = json.NewDecoder(res.Body).Decode(&comment)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode update comment response: %w", err)
+		return nil, fmt.Errorf(
+			"failed to decode update comment response: %w",
+			err,
+		)
 	}
 	return &comment, nil
 }

@@ -56,13 +56,6 @@ type ProjectOptions struct {
 	ViewStyle   string `json:"view_style,omitempty"`
 }
 
-// Collaborator represents a collaborator on a project.
-type Collaborator struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
 // GetProjects returns a list containing all active user projects and a cursor
 // for pagination. The cursor is nil if there are no more pages to return.
 func (c *Client) GetProjects(
@@ -135,8 +128,17 @@ func (c *Client) CreateProject(
 }
 
 // GetProject returns a project related to the given projectId.
-func (c *Client) GetProject(ctx context.Context, projectId string) (*Project, error) {
-	res, err := c.request(ctx, "GET", fmt.Sprintf("/projects/%s", projectId), nil, nil)
+func (c *Client) GetProject(
+	ctx context.Context,
+	projectId string,
+) (*Project, error) {
+	res, err := c.request(
+		ctx,
+		"GET",
+		fmt.Sprintf("/projects/%s", projectId),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project: %w", err)
 	}
@@ -157,7 +159,13 @@ func (c *Client) UpdateProject(
 	projectId string,
 	options *ProjectOptions,
 ) (*Project, error) {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s", projectId), options, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/projects/%s", projectId),
+		options,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update project: %w", err)
 	}
@@ -173,7 +181,13 @@ func (c *Client) UpdateProject(
 
 // ArchiveProject archives a project with the given projectId.
 func (c *Client) ArchiveProject(ctx context.Context, projectId string) error {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/archive", projectId), nil, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/projects/%s/archive", projectId),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to archive project: %w", err)
 	}
@@ -184,7 +198,13 @@ func (c *Client) ArchiveProject(ctx context.Context, projectId string) error {
 
 // UnarchiveProject unarchives a project with the given projectId.
 func (c *Client) UnarchiveProject(ctx context.Context, projectId string) error {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/projects/%s/unarchive", projectId), nil, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/projects/%s/unarchive", projectId),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to unarchive project: %w", err)
 	}
@@ -195,7 +215,13 @@ func (c *Client) UnarchiveProject(ctx context.Context, projectId string) error {
 
 // DeleteProject deletes a project with the given projectId.
 func (c *Client) DeleteProject(ctx context.Context, projectId string) error {
-	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/projects/%s", projectId), nil, nil)
+	res, err := c.request(
+		ctx,
+		"DELETE",
+		fmt.Sprintf("/projects/%s", projectId),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to delete project: %w", err)
 	}
@@ -220,7 +246,10 @@ func (c *Client) GetProjectCollaborators(
 		pagination,
 	)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get project collaborators: %w", err)
+		return nil, nil, fmt.Errorf(
+			"failed to get project collaborators: %w",
+			err,
+		)
 	}
 	defer res.Body.Close()
 

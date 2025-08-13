@@ -37,7 +37,8 @@ type LabelOptions struct {
 	IsFavorite bool   `json:"is_favorite,omitempty"`
 }
 
-// SharedLabels returns a set of unique strings containing labels from active tasks.
+// SharedLabels returns a set of unique strings containing labels from active
+// tasks.
 // By default, the names of a user's personal labels will also be included.
 // These can be excluded by passing the OmitPersonal field in the
 // SharedLabelFilters.
@@ -54,7 +55,10 @@ func (c *Client) SharedLabels(
 	var pagiResp PaginationResponse[string]
 	err = json.NewDecoder(res.Body).Decode(&pagiResp)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to decode shared labels response: %w", err)
+		return nil, nil, fmt.Errorf(
+			"failed to decode shared labels response: %w",
+			err,
+		)
 	}
 
 	return pagiResp.Results, pagiResp.NextCursor, nil
@@ -120,7 +124,13 @@ func (c *Client) SharedLabelsRemove(ctx context.Context, name string) error {
 		return fmt.Errorf("label name is required")
 	}
 
-	res, err := c.request(ctx, "POST", "/labels/shared/remove", LabelOptions{Name: name}, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		"/labels/shared/remove",
+		LabelOptions{Name: name},
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to remove shared label: %w", err)
 	}
@@ -130,7 +140,11 @@ func (c *Client) SharedLabelsRemove(ctx context.Context, name string) error {
 }
 
 // SharedLabelsRename renames the given shared label from all active tasks.
-func (c *Client) SharedLabelsRename(ctx context.Context, name string, newName string) error {
+func (c *Client) SharedLabelsRename(
+	ctx context.Context,
+	name string,
+	newName string,
+) error {
 	if name == "" {
 		return fmt.Errorf("label name is required")
 	}
@@ -160,7 +174,13 @@ func (c *Client) DeleteLabel(ctx context.Context, id string) error {
 		return fmt.Errorf("label ID is required")
 	}
 
-	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/labels/%s", id), nil, nil)
+	res, err := c.request(
+		ctx,
+		"DELETE",
+		fmt.Sprintf("/labels/%s", id),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to delete label: %w", err)
 	}
@@ -204,7 +224,13 @@ func (c *Client) UpdateLabel(
 		return nil, fmt.Errorf("options are required")
 	}
 
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/labels/%s", id), options, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/labels/%s", id),
+		options,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update label: %w", err)
 	}

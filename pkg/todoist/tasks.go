@@ -95,7 +95,10 @@ func (c *Client) CreateTask(
 
 // GetTasks returns a list containing all active user tasks and a cursor for
 // pagination. The cursor is nil if there are no more pages to return.
-func (c *Client) GetTasks(ctx context.Context, filters *TaskFilters) ([]Task, *string, error) {
+func (c *Client) GetTasks(
+	ctx context.Context,
+	filters *TaskFilters,
+) ([]Task, *string, error) {
 	res, err := c.request(ctx, "GET", "/tasks", nil, filters)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get tasks: %w", err)
@@ -147,7 +150,13 @@ func (c *Client) QuickAddTask(
 // ReopenTask reopens a task that has been completed. The taskID parameter is
 // the ID of the task to reopen.
 func (c *Client) ReopenTask(ctx context.Context, taskID string) error {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/reopen", taskID), nil, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/tasks/%s/reopen", taskID),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to reopen task: %w", err)
 	}
@@ -159,7 +168,13 @@ func (c *Client) ReopenTask(ctx context.Context, taskID string) error {
 // CloseTask closes a task that has been completed. The taskID parameter is
 // the ID of the task to close.
 func (c *Client) CloseTask(ctx context.Context, taskID string) error {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s/close", taskID), nil, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/tasks/%s/close", taskID),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to close task: %w", err)
 	}
@@ -173,7 +188,13 @@ func (c *Client) CloseTask(ctx context.Context, taskID string) error {
 // GetTask returns a task related to the given taskID. The taskID parameter
 // is the ID of the task to get. The taskID parameter is required.
 func (c *Client) GetTask(ctx context.Context, taskID string) (*Task, error) {
-	res, err := c.request(ctx, "GET", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
+	res, err := c.request(
+		ctx,
+		"GET",
+		fmt.Sprintf("/tasks/%s", taskID),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task: %w", err)
 	}
@@ -193,7 +214,13 @@ func (c *Client) UpdateTask(
 	taskID string,
 	options *TaskOptions,
 ) (*Task, error) {
-	res, err := c.request(ctx, "POST", fmt.Sprintf("/tasks/%s", taskID), options, nil)
+	res, err := c.request(
+		ctx,
+		"POST",
+		fmt.Sprintf("/tasks/%s", taskID),
+		options,
+		nil,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update task: %w", err)
 	}
@@ -210,7 +237,13 @@ func (c *Client) UpdateTask(
 // DeleteTask deletes a task with the given taskID. The taskID parameter is the
 // ID of the task to delete. The taskID parameter is required.
 func (c *Client) DeleteTask(ctx context.Context, taskID string) error {
-	res, err := c.request(ctx, "DELETE", fmt.Sprintf("/tasks/%s", taskID), nil, nil)
+	res, err := c.request(
+		ctx,
+		"DELETE",
+		fmt.Sprintf("/tasks/%s", taskID),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to delete task: %w", err)
 	}
